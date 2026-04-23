@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+{% block title %}Models — CyberGuard{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  .models-hero {
+    padding: 72px 0 48px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .models-hero h1 { font-size: clamp(2rem, 4vw, 3rem); margin: 16px 0 10px; }
+  .models-hero p { color: var(--text2); font-size: 0.95rem; max-width: 580px; line-height: 1.7; }
+
+  .tabs {
+    display: flex;
+    gap: 4px;
+    margin: 32px 0 28px;
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 5px;
+    width: fit-content;
+    box-shadow: var(--shadow);
+  }
+
+  .tab-btn {
+    padding: 10px 22px;
+    background: transparent;
+    border: none;
+    color: var(--text2);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .tab-btn.active {
+    background: var(--grad);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(79,110,247,0.3);
+  }
+
+  .tab-btn:hover:not(.active) { background: var(--bg2); color: var(--text); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .metrics-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+
+  .metric-box {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 22px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.5s ease both;
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .metric-box:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .metric-box:nth-child(1) { animation-delay: 0.1s; }
+  .metric-box:nth-child(2) { animation-delay: 0.2s; }
+  .metric-box:nth-child(3) { animation-delay: 0.3s; }
+  .metric-box:nth-child(4) { animation-delay: 0.4s; }
+
+  .metric-val {
+    font-size: 1.9rem;
+    font-weight: 900;
+    background: var(--grad);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    display: block;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+
+  .metric-lbl {
+    font-size: 0.72rem;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 500;
+  }
+
+  .charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  .chart-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .chart-title { font-weight: 800; font-size: 0.95rem; margin-bottom: 3px; color: var(--text); }
+  .chart-subtitle { font-size: 0.75rem; color: var(--text3); font-family: 'JetBrains Mono', monospace; margin-bottom: 20px; }
+  .chart-wrap { position: relative; height: 260px; }
+
+  .cm-wrap { overflow-x: auto; margin-top: 20px; }
+
+  .cm-table { border-collapse: collapse; width: 100%; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+  .cm-table th { padding: 10px 12px; color: var(--text3); font-weight: 600; font-size: 0.7rem; text-align: center; }
+  .cm-table td {
+    padding: 10px 12px;
+    text-align: center;
+    border-radius: 6px;
+    font-weight: 700;
+    transition: transform 0.2s;
+  }
+  .cm-table td:hover { transform: scale(1.06); z-index: 1; position: relative; }
+  .cm-axis-label {
+    font-size: 0.68rem;
+    color: var(--text3);
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+    text-align: center;
+    padding: 8px 4px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .model-compare-bar {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 80px;
+    box-shadow: var(--shadow);
+  }
+
+  .compare-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .compare-name {
+    width: 150px;
+    font-size: 0.85rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text2);
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+
+  .compare-bar-wrap {
+    flex: 1;
+    background: var(--bg2);
+    height: 32px;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .compare-bar-fill {
+    height: 100%;
+    border-radius: 8px;
+    transition: width 1.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+
+  .compare-row.best .compare-name { color: var(--accent); font-weight: 700; }
+  .best-fill { background: var(--grad); color: #fff; }
+  .compare-bar-fill:not(.best-fill) { background: linear-gradient(90deg, rgba(79,110,247,0.12), rgba(79,110,247,0.2)); color: var(--text2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="models-hero">
+    <span class="badge badge-purple">Model Analytics</span>
+    <h1>Performance Dashboard</h1>
+    <p>Explore the metrics, confusion matrices, and model comparisons for both prediction modules.</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('url')">🔗 URL Phishing Model</button>
+    <button class="tab-btn" onclick="switchTab('cyber')">⚡ Cyber Attack Model</button>
+  </div>
+
+  <!-- URL TAB -->
+  <div class="tab-panel active" id="tab-url">
+    <div class="metrics-row">
+      <div class="metric-box"><div class="metric-val">99.97%</div><div class="metric-lbl">Accuracy</div></div>
+      <div class="metric-box"><div class="metric-val">100%</div><div class="metric-lbl">Precision</div></div>
+      <div class="metric-box"><div class="metric-val">100%</div><div class="metric-lbl">Recall</div></div>
+      <div class="metric-box"><div class="metric-val">1.00</div><div class="metric-lbl">F1 Score</div></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Feature Importance</div>
+        <div class="chart-subtitle">Top 14 extracted URL features</div>
+        <div class="chart-wrap"><canvas id="url-features-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Class Distribution</div>
+        <div class="chart-subtitle">Phishing vs Legitimate split</div>
+        <div class="chart-wrap"><canvas id="url-dist-chart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:24px">
+      <div class="chart-title">URL Confusion Matrix</div>
+      <div class="chart-subtitle">Test set — 9763 samples</div>
+      <div class="cm-wrap">
+        <table class="cm-table">
+          <thead>
+            <tr><th></th><th></th><th colspan="2" style="color:var(--accent)">Predicted</th></tr>
+            <tr><th></th><th></th><th>Legitimate (0)</th><th>Phishing (1)</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td rowspan="2" class="cm-axis-label" style="color:var(--accent2)">Actual</td>
+              <td style="color:var(--text2);padding:10px 14px;font-size:0.78rem">Legitimate (0)</td>
+              <td style="background:rgba(16,185,129,0.15);color:#059669">4879</td>
+              <td style="background:rgba(239,68,68,0.1);color:var(--accent3)">3</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text2);padding:10px 14px;font-size:0.78rem">Phishing (1)</td>
+              <td style="background:rgba(239,68,68,0.1);color:var(--accent3)">0</td>
+              <td style="background:rgba(16,185,129,0.15);color:#059669">4881</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- CYBER TAB -->
+  <div class="tab-panel" id="tab-cyber">
+    <div class="metrics-row">
+      <div class="metric-box"><div class="metric-val">99.16%</div><div class="metric-lbl">Accuracy</div></div>
+      <div class="metric-box"><div class="metric-val">99%</div><div class="metric-lbl">Precision</div></div>
+      <div class="metric-box"><div class="metric-val">99%</div><div class="metric-lbl">Recall</div></div>
+      <div class="metric-box"><div class="metric-val">68,139</div><div class="metric-lbl">Test Samples</div></div>
+    </div>
+
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-title">Per-Class F1 Score</div>
+        <div class="chart-subtitle">LightGBM — UNSW-NB15 dataset</div>
+        <div class="chart-wrap"><canvas id="cyber-f1-chart"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Model Accuracy Comparison</div>
+        <div class="chart-subtitle">6 algorithms benchmarked</div>
+        <div class="chart-wrap"><canvas id="cyber-compare-chart"></canvas></div>
+      </div>
+    </div>
+
+    <div class="chart-card" style="margin-bottom:24px">
+      <div class="chart-title">Confusion Matrix — LightGBM</div>
+      <div class="chart-subtitle">5-class network attack classification</div>
+      <div class="cm-wrap">
+        <table class="cm-table" id="cm-cyber-table">
+          <thead>
+            <tr><th></th><th></th><th colspan="5" style="color:var(--accent)">Predicted Label</th></tr>
+            <tr id="cm-header-row"><th></th><th></th></tr>
+          </thead>
+          <tbody id="cm-cyber-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="model-compare-bar">
+      <p class="section-label">Algorithm Comparison</p>
+      <h3 style="font-size:1.1rem;margin-bottom:20px;font-weight:800">Accuracy Benchmarks</h3>
+      <div id="compare-bars"></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+Chart.defaults.color = '#94a3b8';
+Chart.defaults.font = { family: "'JetBrains Mono', monospace", size: 11 };
+
+function switchTab(t) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', (i===0&&t==='url')||(i===1&&t==='cyber'));
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('tab-'+t).classList.add('active');
+  if (t === 'cyber') setTimeout(buildCyberCharts, 50);
+}
+
+const urlFeatCtx = document.getElementById('url-features-chart').getContext('2d');
+new Chart(urlFeatCtx, {
+  type: 'bar',
+  data: {
+    labels: ['Entropy','URL Len','Susp KW','Brands','Domain Len','Digits','Special','Dots','HTTPS','Path','Hyphens','Subdomain','IP URL','IP Flag'],
+    datasets: [{
+      label: 'Relative Importance',
+      data: [0.22,0.17,0.14,0.10,0.09,0.07,0.06,0.05,0.04,0.03,0.02,0.02,0.01,0.01],
+      backgroundColor: 'rgba(79,110,247,0.7)',
+      borderColor: '#4f6ef7',
+      borderWidth: 1,
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: v => (v*100).toFixed(0)+'%' } }
+    }
+  }
+});
+
+const urlDistCtx = document.getElementById('url-dist-chart').getContext('2d');
+new Chart(urlDistCtx, {
+  type: 'doughnut',
+  data: {
+    labels: ['Legitimate', 'Phishing'],
+    datasets: [{
+      data: [4882, 4881],
+      backgroundColor: ['rgba(16,185,129,0.75)', 'rgba(239,68,68,0.75)'],
+      borderColor: ['#10b981','#ef4444'],
+      borderWidth: 2,
+      hoverOffset: 8
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { position: 'bottom', labels: { padding: 20, color: '#5a6282' } } },
+    cutout: '65%'
+  }
+});
+
+let cyberBuilt = false;
+function buildCyberCharts() {
+  if (cyberBuilt) return;
+  cyberBuilt = true;
+
+  const classes = ['Backdoor','DoS','Generic','Probe','Worm'];
+  const f1 = [0.99, 1.00, 1.00, 0.99, 0.99];
+  const precision = [0.99, 0.99, 1.00, 0.98, 0.99];
+  const recall = [0.99, 1.00, 1.00, 0.99, 0.99];
+
+  const f1Ctx = document.getElementById('cyber-f1-chart').getContext('2d');
+  new Chart(f1Ctx, {
+    type: 'radar',
+    data: {
+      labels: classes,
+      datasets: [
+        { label: 'F1', data: f1, borderColor: '#4f6ef7', backgroundColor: 'rgba(79,110,247,0.1)', pointBackgroundColor: '#4f6ef7', borderWidth: 2 },
+        { label: 'Precision', data: precision, borderColor: '#7c3aed', backgroundColor: 'rgba(124,58,237,0.08)', pointBackgroundColor: '#7c3aed', borderWidth: 2 },
+        { label: 'Recall', data: recall, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.08)', pointBackgroundColor: '#10b981', borderWidth: 2 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        r: {
+          min: 0.95, max: 1.0,
+          grid: { color: 'rgba(0,0,0,0.07)' },
+          angleLines: { color: 'rgba(0,0,0,0.07)' },
+          pointLabels: { color: '#5a6282', font: { size: 11 } },
+          ticks: { display: false }
+        }
+      },
+      plugins: { legend: { position: 'bottom', labels: { padding: 16, color: '#5a6282' } } }
+    }
+  });
+
+  const models = ['LightGBM','XGBoost','Random Forest','Decision Tree','KNN','Logistic Reg.'];
+  const accs = [99.16, 98.78, 98.25, 97.67, 95.77, 78.59];
+  const bgs = ['rgba(79,110,247,0.85)','rgba(124,58,237,0.6)','rgba(124,58,237,0.5)','rgba(124,58,237,0.4)','rgba(79,110,247,0.3)','rgba(79,110,247,0.2)'];
+
+  const cmpCtx = document.getElementById('cyber-compare-chart').getContext('2d');
+  new Chart(cmpCtx, {
+    type: 'bar',
+    data: {
+      labels: models,
+      datasets: [{ label: 'Accuracy %', data: accs, backgroundColor: bgs, borderRadius: 5 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 10 } } },
+        y: { min: 70, max: 101, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: v => v + '%' } }
+      }
+    }
+  });
+
+  const cm = [
+    [18905, 47, 21, 98, 28],
+    [10, 10839, 0, 0, 0],
+    [0, 0, 11461, 1, 0],
+    [42, 0, 0, 14470, 46],
+    [41, 11, 0, 62, 12057]
+  ];
+
+  const headerRow = document.getElementById('cm-header-row');
+  classes.forEach(c => {
+    const th = document.createElement('th');
+    th.textContent = c;
+    headerRow.appendChild(th);
+  });
+
+  const tbody = document.getElementById('cm-cyber-body');
+  cm.forEach((row, i) => {
+    const tr = document.createElement('tr');
+    const labelTd = document.createElement('td');
+    labelTd.style.cssText = 'color:var(--text2);padding:8px 12px;white-space:nowrap;font-size:0.78rem';
+    labelTd.textContent = classes[i];
+    tr.appendChild(labelTd);
+    const max = Math.max(...row);
+    row.forEach((val, j) => {
+      const td = document.createElement('td');
+      td.textContent = val.toLocaleString();
+      const intensity = val / max;
+      if (i === j) {
+        td.style.background = `rgba(79,110,247,${0.1 + intensity * 0.45})`;
+        td.style.color = intensity > 0.7 ? '#fff' : '#4f6ef7';
+      } else {
+        td.style.background = val > 0 ? `rgba(239,68,68,${Math.min(intensity * 3, 0.3)})` : 'transparent';
+        td.style.color = val > 0 ? '#ef4444' : '#94a3b8';
+        td.style.opacity = val > 0 ? '1' : '0.4';
+      }
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+
+  const barsEl = document.getElementById('compare-bars');
+  const modelData = [
+    {name:'LightGBM', acc:99.16, best:true},
+    {name:'XGBoost', acc:98.78, best:false},
+    {name:'Random Forest', acc:98.25, best:false},
+    {name:'Decision Tree', acc:97.67, best:false},
+    {name:'KNN', acc:95.77, best:false},
+    {name:'Logistic Reg.', acc:78.59, best:false}
+  ];
+  modelData.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'compare-row' + (m.best ? ' best' : '');
+    row.innerHTML = `
+      <div class="compare-name">${m.best ? '★ ' : ''}${m.name}</div>
+      <div class="compare-bar-wrap">
+        <div class="compare-bar-fill ${m.best ? 'best-fill' : ''}" style="width:${m.acc}%">
+          ${m.acc}%
+        </div>
+      </div>
+    `;
+    barsEl.appendChild(row);
+  });
+}
+</script>
+{% endblock %}

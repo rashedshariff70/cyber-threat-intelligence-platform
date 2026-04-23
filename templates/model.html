@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Models — PhishGuard AI</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root{--blue:#2563eb;--teal:#0d9488;--sky:#eff6ff;--bg:#f8fafc;--white:#ffffff;--surf2:#f1f5f9;--border:#e2e8f0;--text:#0f172a;--text2:#475569;--text3:#94a3b8;--danger:#ef4444;--success:#10b981;--warn:#f59e0b;--grad:linear-gradient(135deg,#2563eb,#0d9488);}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;}
+
+    .navbar{background:rgba(255,255,255,.93)!important;backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:.9rem 0;position:fixed;top:0;left:0;right:0;z-index:1000;}
+    .navbar-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.2rem;color:var(--text)!important;text-decoration:none;}
+    .brand-mark{width:36px;height:36px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;box-shadow:0 4px 12px rgba(37,99,235,.3);}
+    .brand-name em{font-style:normal;color:var(--blue);}
+    .nav-link{font-size:.875rem;font-weight:600;color:var(--text2)!important;padding:.45rem 1rem!important;border-radius:8px;transition:all .2s;}
+    .nav-link:hover,.nav-link.active{color:var(--blue)!important;background:var(--sky);}
+    .nav-cta{background:var(--grad);color:#fff!important;border-radius:8px;padding:.45rem 1.1rem!important;font-weight:700;box-shadow:0 2px 8px rgba(37,99,235,.25);transition:all .2s;}
+    .nav-cta:hover{box-shadow:0 6px 18px rgba(37,99,235,.4);transform:translateY(-1px);}
+
+    /* PAGE HEADER */
+    .page-hero{padding:8rem 0 5rem;background:#fff;border-bottom:1px solid var(--border);position:relative;overflow:hidden;}
+    .ph-blob{position:absolute;border-radius:50%;filter:blur(90px);pointer-events:none;}
+    .phb1{width:500px;height:500px;top:-100px;right:-100px;background:radial-gradient(circle,rgba(37,99,235,.08),rgba(13,148,136,.05));}
+    .chip{display:inline-block;background:var(--sky);color:var(--blue);font-size:.72rem;font-weight:700;padding:4px 12px;border-radius:100px;margin-bottom:1rem;letter-spacing:.3px;}
+    .page-title{font-size:clamp(2.2rem,5vw,4.2rem);font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-bottom:1rem;}
+    .grad-text{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .page-sub{font-size:1.05rem;color:var(--text2);line-height:1.75;max-width:560px;font-weight:500;}
+
+    /* BEST MODEL CARD */
+    .best-sec{padding:5.5rem 0;}
+    .sec-h{font-size:clamp(1.7rem,4vw,2.8rem);font-weight:800;line-height:1.15;letter-spacing:-.03em;margin-bottom:.6rem;}
+    .sec-sub{font-size:.95rem;color:var(--text2);max-width:420px;line-height:1.7;}
+
+    .champion-card{background:#fff;border:2px solid var(--border);border-radius:20px;padding:2.5rem;position:relative;overflow:hidden;box-shadow:0 12px 40px rgba(37,99,235,.08);}
+    .champion-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,var(--blue),var(--teal),#f59e0b);}
+    .trophy-badge{display:inline-flex;align-items:center;gap:7px;background:#fffbeb;border:1px solid #fde68a;padding:5px 13px;border-radius:100px;font-size:.72rem;font-weight:700;color:#d97706;margin-bottom:1.2rem;}
+    .champ-name{font-size:clamp(1.5rem,4vw,2.5rem);font-weight:800;letter-spacing:-.02em;margin-bottom:.6rem;}
+    .champ-desc{font-size:.92rem;color:var(--text2);line-height:1.75;margin-bottom:1.5rem;}
+    .metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;}
+    .metric-box{background:var(--surf2);border:1.5px solid var(--border);border-radius:12px;padding:1rem;text-align:center;}
+    .metric-val{font-family:'Instrument Serif',serif;font-style:italic;font-size:1.8rem;background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;}
+    .metric-lbl{font-size:.68rem;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;margin-top:3px;}
+
+    .acc-big{font-family:'Instrument Serif',serif;font-style:italic;font-size:clamp(4rem,10vw,7rem);background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1;margin-bottom:.3rem;}
+    .acc-lbl{font-size:.78rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1.5px;}
+    .perf-bar{margin-bottom:.9rem;}
+    .pb-top{display:flex;justify-content:space-between;margin-bottom:4px;font-size:.75rem;font-weight:600;}
+    .pb-label{color:var(--text3);}
+    .pb-track{height:7px;background:var(--surf2);border-radius:4px;overflow:hidden;}
+    .pb-fill{height:100%;border-radius:4px;}
+    .pf-blue{background:linear-gradient(90deg,var(--blue),#60a5fa);}
+    .pf-green{background:linear-gradient(90deg,var(--success),#34d399);}
+    .pf-teal{background:linear-gradient(90deg,var(--teal),#2dd4bf);}
+
+    /* TABLE */
+    .table-sec{padding:5.5rem 0;background:#fff;border-top:1px solid var(--border);}
+    .table-wrap{background:#fff;border:1.5px solid var(--border);border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(15,23,42,.06);}
+    .table-topbar{background:var(--surf2);border-bottom:1px solid var(--border);padding:12px 18px;display:flex;align-items:center;gap:8px;}
+    .table-icon{color:var(--blue);font-size:.9rem;}
+    .table-title-bar{font-size:.72rem;font-weight:700;color:var(--text2);letter-spacing:.3px;}
+    table{width:100%;border-collapse:collapse;}
+    thead th{padding:.9rem 1.2rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--text3);background:var(--surf2);border-bottom:1.5px solid var(--border);text-align:left;white-space:nowrap;}
+    tbody tr{border-bottom:1px solid var(--border);transition:background .18s;}
+    tbody tr:hover{background:var(--sky);}
+    tbody tr:last-child{border-bottom:none;}
+    tbody tr.champ-row{background:#fffbeb;border-left:3px solid #f59e0b;}
+    tbody td{padding:.85rem 1.2rem;font-size:.88rem;color:var(--text2);vertical-align:middle;}
+    .model-td{font-weight:700;color:var(--text);}
+    .rank-tag{display:inline-block;font-size:.6rem;font-weight:800;padding:2px 7px;border-radius:100px;margin-left:6px;vertical-align:middle;}
+    .rt-gold{background:#fef3c7;color:#d97706;}
+    .rt-silver{background:#f1f5f9;color:#64748b;}
+    .rt-bronze{background:#fef2e8;color:#c2410c;}
+
+    .tag-pill{display:inline-block;font-size:.65rem;font-weight:700;padding:3px 9px;border-radius:100px;letter-spacing:.3px;}
+    .tp-tree{background:#f0fdf4;color:#059669;}
+    .tp-boost{background:#fff7ed;color:#ea580c;}
+    .tp-nn{background:#eff6ff;color:var(--blue);}
+    .tp-lin{background:#f5f3ff;color:#7c3aed;}
+    .tp-prob{background:#fefce8;color:#ca8a04;}
+    .tp-knn{background:#fff1f2;color:var(--danger);}
+
+    .bar-cell{display:flex;align-items:center;gap:8px;min-width:120px;}
+    .bc-track{flex:1;height:5px;background:var(--surf2);border-radius:3px;overflow:hidden;}
+    .bc-fill{height:100%;border-radius:3px;background:var(--grad);}
+    .bc-fill.low{background:linear-gradient(90deg,#94a3b8,#cbd5e1);}
+    .bc-val{font-size:.78rem;font-weight:700;color:var(--text);white-space:nowrap;}
+
+    /* FEATURES */
+    .feat-sec{padding:5.5rem 0;background:var(--surf2);}
+    .feat-card{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:1.6rem;height:100%;transition:all .25s;}
+    .feat-card:hover{border-color:var(--blue);box-shadow:0 10px 30px rgba(37,99,235,.09);transform:translateY(-3px);}
+    .feat-idx{font-size:.65rem;font-weight:700;color:var(--blue);letter-spacing:2px;margin-bottom:.5rem;}
+    .feat-title{font-weight:700;font-size:1rem;margin-bottom:.4rem;}
+    .feat-desc{font-size:.84rem;color:var(--text2);line-height:1.65;}
+    .imp-bar{margin-top:.9rem;height:5px;background:var(--surf2);border-radius:3px;overflow:hidden;}
+    .imp-fill{height:100%;border-radius:3px;background:var(--grad);}
+
+    /* CONFUSION + ROC */
+    .eval-sec{padding:5.5rem 0;background:#fff;border-top:1px solid var(--border);}
+    .cm-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;max-width:300px;}
+    .cm-cell{border-radius:10px;padding:1.3rem;text-align:center;}
+    .cm-tp{background:#f0fdf4;border:1.5px solid #bbf7d0;}
+    .cm-tn{background:#f0fdf4;border:1.5px solid #d1fae5;}
+    .cm-fp{background:#fff1f2;border:1.5px solid #fecdd3;}
+    .cm-fn{background:#fffbeb;border:1.5px solid #fde68a;}
+    .cm-val{font-family:'Instrument Serif',serif;font-style:italic;font-size:1.7rem;line-height:1;}
+    .cm-val-g{color:var(--success);}
+    .cm-val-r{color:var(--danger);}
+    .cm-val-y{color:#d97706;}
+    .cm-lbl{font-size:.62rem;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-top:3px;}
+    .cm-axis{font-size:.62rem;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase;}
+
+    .roc-item{margin-bottom:.9rem;}
+    .roc-top{display:flex;justify-content:space-between;margin-bottom:4px;font-size:.78rem;font-weight:600;}
+    .roc-name{color:var(--text2);}
+    .roc-val{color:var(--text);}
+    .roc-track{height:7px;background:var(--surf2);border-radius:4px;overflow:hidden;}
+    .roc-fill{height:100%;border-radius:4px;}
+    .rf-1{background:linear-gradient(90deg,var(--blue),var(--teal));}
+    .rf-2{background:linear-gradient(90deg,#3b82f6,#60a5fa);}
+    .rf-3{background:linear-gradient(90deg,var(--success),#34d399);}
+    .rf-4{background:linear-gradient(90deg,#f59e0b,#fbbf24);}
+    .rf-5{background:linear-gradient(90deg,#7c3aed,#a78bfa);}
+    .rf-6{background:linear-gradient(90deg,#94a3b8,#cbd5e1);}
+    .rf-7{background:linear-gradient(90deg,#94a3b8,#e2e8f0);}
+
+    /* CTA */
+    .cta-sec{padding:5.5rem 0;text-align:center;background:var(--surf2);border-top:1px solid var(--border);}
+    .cta-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-.03em;margin-bottom:.8rem;}
+    .cta-sub{color:var(--text2);font-size:1rem;margin-bottom:2rem;}
+    .btn-p{background:var(--grad);color:#fff;border:none;padding:13px 28px;border-radius:12px;font-size:.92rem;font-weight:700;text-decoration:none;box-shadow:0 6px 20px rgba(37,99,235,.28);transition:all .25s;display:inline-flex;align-items:center;gap:8px;margin:.3rem;}
+    .btn-p:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(37,99,235,.38);color:#fff;}
+    .btn-s{background:#fff;color:var(--text);border:1.5px solid var(--border);padding:12px 26px;border-radius:12px;font-size:.92rem;font-weight:700;text-decoration:none;transition:all .25s;display:inline-flex;align-items:center;gap:8px;margin:.3rem;}
+    .btn-s:hover{border-color:var(--blue);color:var(--blue);background:var(--sky);}
+
+    footer{background:var(--text);padding:2.2rem 0;}
+    .ft-brand{font-size:1rem;font-weight:800;color:#fff;}
+    .ft-copy{font-size:.76rem;color:var(--text3);margin-top:2px;}
+    .ft-links{display:flex;gap:1.2rem;justify-content:flex-end;}
+    .ft-links a{font-size:.76rem;color:var(--text3);text-decoration:none;transition:color .2s;}
+    .ft-links a:hover{color:#fff;}
+
+    .modal-content{background:#fff;border:1.5px solid var(--border);border-radius:20px;box-shadow:0 25px 60px rgba(15,23,42,.15);}
+    .modal-header{border-bottom:1px solid var(--border);padding:1.4rem 1.7rem;}
+    .modal-title{font-weight:800;font-size:1.2rem;}
+    .modal-body{padding:1.7rem;}
+    .form-label{font-size:.76rem;font-weight:700;color:var(--text2);margin-bottom:5px;}
+    .form-control{border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;font-size:.9rem;font-family:'Plus Jakarta Sans',sans-serif;transition:border-color .2s;}
+    .form-control:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1);outline:none;}
+    .btn-modal{width:100%;background:var(--grad);color:#fff;border:none;padding:12px;border-radius:10px;font-weight:700;font-size:.92rem;margin-top:.5rem;transition:all .2s;cursor:pointer;}
+    .btn-modal:hover{box-shadow:0 6px 20px rgba(37,99,235,.3);transform:translateY(-1px);}
+    .modal-note{text-align:center;margin-top:.9rem;font-size:.78rem;color:var(--text3);}
+    .modal-note a{color:var(--blue);font-weight:600;text-decoration:none;}
+    @media(max-width:768px){.metric-row{grid-template-columns:repeat(2,1fr);}.cm-grid{max-width:240px;}}
+    @media(max-width:576px){.ft-links{justify-content:flex-start;margin-top:.5rem;}}
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg">
+  <div class="container">
+    <a class="navbar-brand" href="/index2">
+      <div class="brand-mark"><i class="fas fa-shield-halved"></i></div>
+      <span class="brand-name">Phish<em>Guard</em> AI</span>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse justify-content-end" id="nav">
+      <ul class="navbar-nav align-items-center gap-1">
+        <li><a class="nav-link" href="/index2">Home</a></li>
+        <li><a class="nav-link" href="/about">About</a></li>
+        <li><a class="nav-link active" href="/model">Models</a></li>
+        <li><a class="nav-link" href="/prediction">URL Prediction</a></li>
+        <li class="ms-2"><a class="nav-link nav-cta" href="#" data-bs-toggle="modal" data-bs-target="#loginModal"><i class="fas fa-user me-1"></i>Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- PAGE HEADER -->
+<section class="page-hero">
+  <div class="ph-blob phb1"></div>
+  <div class="container position-relative" style="z-index:2">
+    <div class="chip">ML Model Benchmarks</div>
+    <h1 class="page-title">12 Algorithms.<br><span class="grad-text">One Winner.</span></h1>
+    <p class="page-sub">We trained, tuned, and rigorously evaluated every major classification algorithm on our phishing URL dataset. Here's how they performed head-to-head across accuracy, precision, recall, and AUC-ROC.</p>
+  </div>
+</section>
+
+<!-- BEST MODEL -->
+<section class="best-sec">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col"><div class="chip">Champion Model</div><h2 class="sec-h">Top-performing algorithm</h2></div>
+    </div>
+    <div class="champion-card">
+      <div class="row g-5 align-items-center">
+        <div class="col-lg-7">
+          <div class="trophy-badge">🏆 Best Performing Model</div>
+          <div class="champ-name">Random Forest Classifier</div>
+          <p class="champ-desc">After extensive cross-validation and hyperparameter tuning, the Random Forest ensemble emerged as the top performer — balancing precision, recall, and generalization. It handles mixed-type features, non-linear boundaries, and feature interactions natively without scaling.</p>
+          <div class="metric-row">
+            <div class="metric-box"><div class="metric-val">97.8%</div><div class="metric-lbl">Accuracy</div></div>
+            <div class="metric-box"><div class="metric-val">0.981</div><div class="metric-lbl">AUC-ROC</div></div>
+            <div class="metric-box"><div class="metric-val">97.6%</div><div class="metric-lbl">Precision</div></div>
+            <div class="metric-box"><div class="metric-val">98.1%</div><div class="metric-lbl">Recall</div></div>
+          </div>
+        </div>
+        <div class="col-lg-5 text-center">
+          <div class="acc-big">97.8%</div>
+          <div class="acc-lbl">Classification Accuracy</div>
+          <div class="mt-4 text-start">
+            <div class="perf-bar">
+              <div class="pb-top"><span class="pb-label">Precision</span><span style="color:var(--blue);font-weight:700;">97.6%</span></div>
+              <div class="pb-track"><div class="pb-fill pf-blue" style="width:97.6%"></div></div>
+            </div>
+            <div class="perf-bar">
+              <div class="pb-top"><span class="pb-label">Recall</span><span style="color:var(--success);font-weight:700;">98.1%</span></div>
+              <div class="pb-track"><div class="pb-fill pf-green" style="width:98.1%"></div></div>
+            </div>
+            <div class="perf-bar">
+              <div class="pb-top"><span class="pb-label">F1-Score</span><span style="color:var(--teal);font-weight:700;">97.8%</span></div>
+              <div class="pb-track"><div class="pb-fill pf-teal" style="width:97.8%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TABLE -->
+<section class="table-sec">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col-lg-6">
+        <div class="chip">Full Leaderboard</div>
+        <h2 class="sec-h">All 12 models ranked</h2>
+        <p class="sec-sub">5-fold stratified cross-validation on our complete PhishURL dataset. Sorted by accuracy.</p>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <div class="table-topbar">
+        <i class="fas fa-table-list table-icon"></i>
+        <span class="table-title-bar">Model Benchmark Results — PhishURL Dataset (450K URLs)</span>
+      </div>
+      <div class="table-responsive">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th><th>Algorithm</th><th>Type</th><th>Accuracy</th><th>Precision</th><th>Recall</th><th>F1</th><th>AUC-ROC</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="champ-row">
+              <td style="font-weight:700;color:#d97706;">01</td>
+              <td class="model-td">Random Forest<span class="rank-tag rt-gold">🏆 #1</span></td>
+              <td><span class="tag-pill tp-tree">Ensemble</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill" style="width:97.8%"></div></div><span class="bc-val">97.8%</span></div></td>
+              <td>97.6%</td><td>98.1%</td><td>97.8%</td><td style="font-weight:700;color:var(--blue);">0.981</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">02</td>
+              <td class="model-td">XGBoost<span class="rank-tag rt-silver">#2</span></td>
+              <td><span class="tag-pill tp-boost">Gradient Boost</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill" style="width:97.2%"></div></div><span class="bc-val">97.2%</span></div></td>
+              <td>97.0%</td><td>97.5%</td><td>97.2%</td><td>0.976</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">03</td>
+              <td class="model-td">LightGBM<span class="rank-tag rt-bronze">#3</span></td>
+              <td><span class="tag-pill tp-boost">Gradient Boost</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill" style="width:96.8%"></div></div><span class="bc-val">96.8%</span></div></td>
+              <td>96.5%</td><td>97.1%</td><td>96.8%</td><td>0.972</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">04</td>
+              <td class="model-td">Neural Network (MLP)</td>
+              <td><span class="tag-pill tp-nn">Deep Learning</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill" style="width:96.1%"></div></div><span class="bc-val">96.1%</span></div></td>
+              <td>95.9%</td><td>96.4%</td><td>96.1%</td><td>0.965</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">05</td>
+              <td class="model-td">Gradient Boosting</td>
+              <td><span class="tag-pill tp-boost">Gradient Boost</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill" style="width:95.7%"></div></div><span class="bc-val">95.7%</span></div></td>
+              <td>95.4%</td><td>96.0%</td><td>95.7%</td><td>0.961</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">06</td>
+              <td class="model-td">Decision Tree</td>
+              <td><span class="tag-pill tp-tree">Tree-Based</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill" style="width:94.3%"></div></div><span class="bc-val">94.3%</span></div></td>
+              <td>94.0%</td><td>94.7%</td><td>94.3%</td><td>0.943</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">07</td>
+              <td class="model-td">Support Vector Machine</td>
+              <td><span class="tag-pill tp-lin">Linear</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill low" style="width:93.8%"></div></div><span class="bc-val">93.8%</span></div></td>
+              <td>93.5%</td><td>94.2%</td><td>93.8%</td><td>0.938</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">08</td>
+              <td class="model-td">Extra Trees</td>
+              <td><span class="tag-pill tp-tree">Ensemble</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill low" style="width:93.1%"></div></div><span class="bc-val">93.1%</span></div></td>
+              <td>92.9%</td><td>93.5%</td><td>93.1%</td><td>0.931</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">09</td>
+              <td class="model-td">K-Nearest Neighbors</td>
+              <td><span class="tag-pill tp-knn">Instance-Based</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill low" style="width:91.4%"></div></div><span class="bc-val">91.4%</span></div></td>
+              <td>91.0%</td><td>91.9%</td><td>91.4%</td><td>0.914</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">10</td>
+              <td class="model-td">Logistic Regression</td>
+              <td><span class="tag-pill tp-lin">Linear</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill low" style="width:88.7%"></div></div><span class="bc-val">88.7%</span></div></td>
+              <td>88.3%</td><td>89.2%</td><td>88.7%</td><td>0.887</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">11</td>
+              <td class="model-td">AdaBoost</td>
+              <td><span class="tag-pill tp-boost">Boosting</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill low" style="width:87.2%"></div></div><span class="bc-val">87.2%</span></div></td>
+              <td>87.0%</td><td>87.6%</td><td>87.2%</td><td>0.872</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3);">12</td>
+              <td class="model-td">Naive Bayes</td>
+              <td><span class="tag-pill tp-prob">Probabilistic</span></td>
+              <td><div class="bar-cell"><div class="bc-track"><div class="bc-fill low" style="width:82.4%"></div></div><span class="bc-val">82.4%</span></div></td>
+              <td>82.0%</td><td>83.1%</td><td>82.4%</td><td>0.824</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SHAP FEATURES -->
+<section class="feat-sec">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col-lg-5">
+        <div class="chip">SHAP Feature Importance</div>
+        <h2 class="sec-h">What signals matter most?</h2>
+        <p class="sec-sub">SHAP values reveal which URL features drive phishing predictions in our Random Forest model.</p>
+      </div>
+    </div>
+    <div class="row g-3">
+      <div class="col-sm-6 col-lg-4"><div class="feat-card"><div class="feat-idx">FEATURE 01</div><div class="feat-title">URL Length</div><div class="feat-desc">Phishing URLs tend to be significantly longer to obscure the true destination domain.</div><div class="imp-bar"><div class="imp-fill" style="width:95%"></div></div></div></div>
+      <div class="col-sm-6 col-lg-4"><div class="feat-card"><div class="feat-idx">FEATURE 02</div><div class="feat-title">IP Address in URL</div><div class="feat-desc">Using a raw IP address instead of a domain strongly correlates with phishing and obfuscation.</div><div class="imp-bar"><div class="imp-fill" style="width:92%"></div></div></div></div>
+      <div class="col-sm-6 col-lg-4"><div class="feat-card"><div class="feat-idx">FEATURE 03</div><div class="feat-title">Use of HTTPS</div><div class="feat-desc">HTTPS absence is a phishing signal, though modern attackers increasingly use HTTPS too.</div><div class="imp-bar"><div class="imp-fill" style="width:88%"></div></div></div></div>
+      <div class="col-sm-6 col-lg-4"><div class="feat-card"><div class="feat-idx">FEATURE 04</div><div class="feat-title">Subdomain Count</div><div class="feat-desc">Multiple nested subdomains (paypal.com.malicious.xyz) are a hallmark of domain spoofing.</div><div class="imp-bar"><div class="imp-fill" style="width:85%"></div></div></div></div>
+      <div class="col-sm-6 col-lg-4"><div class="feat-card"><div class="feat-idx">FEATURE 05</div><div class="feat-title">Domain Age &amp; TLD Risk</div><div class="feat-desc">Newly registered domains and high-risk TLDs (.xyz, .tk, .ml) skew heavily phishing.</div><div class="imp-bar"><div class="imp-fill" style="width:82%"></div></div></div></div>
+      <div class="col-sm-6 col-lg-4"><div class="feat-card"><div class="feat-idx">FEATURE 06</div><div class="feat-title">Special Character Ratio</div><div class="feat-desc">High density of @, %, !, = characters in the URL path indicates obfuscation or redirect chaining.</div><div class="imp-bar"><div class="imp-fill" style="width:79%"></div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CONFUSION MATRIX + ROC -->
+<section class="eval-sec">
+  <div class="container">
+    <div class="row mb-5">
+      <div class="col">
+        <div class="chip">Evaluation Deep Dive</div>
+        <h2 class="sec-h">Confusion matrix &amp; AUC-ROC</h2>
+        <p class="sec-sub">Random Forest results on 90,000 held-out test URLs.</p>
+      </div>
+    </div>
+    <div class="row g-5 align-items-center">
+      <div class="col-md-5">
+        <div class="chip" style="margin-bottom:1.2rem;">Confusion Matrix</div>
+        <div style="display:flex;gap:.8rem;align-items:center;margin-bottom:6px;padding-left:80px;">
+          <div style="flex:1;text-align:center;" class="cm-axis">Pred: Legit</div>
+          <div style="flex:1;text-align:center;" class="cm-axis">Pred: Phish</div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:center;margin-bottom:6px;">
+          <div style="width:76px;text-align:right;" class="cm-axis">Actual: Legit</div>
+          <div class="cm-grid" style="flex:1;max-width:none;display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+            <div class="cm-cell cm-tn"><div class="cm-val cm-val-g">43,821</div><div class="cm-lbl">True Neg.</div></div>
+            <div class="cm-cell cm-fp"><div class="cm-val cm-val-r">734</div><div class="cm-lbl">False Pos.</div></div>
+          </div>
+        </div>
+        <div style="display:flex;gap:.8rem;align-items:center;">
+          <div style="width:76px;text-align:right;" class="cm-axis">Actual: Phish</div>
+          <div class="cm-grid" style="flex:1;max-width:none;display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+            <div class="cm-cell cm-fn"><div class="cm-val cm-val-y">847</div><div class="cm-lbl">False Neg.</div></div>
+            <div class="cm-cell cm-tp"><div class="cm-val cm-val-g">44,598</div><div class="cm-lbl">True Pos.</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-7">
+        <div class="chip" style="margin-bottom:1.2rem;">AUC-ROC Scores by Algorithm</div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">Random Forest</span><span class="roc-val">0.981</span></div><div class="roc-track"><div class="roc-fill rf-1" style="width:98.1%"></div></div></div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">XGBoost</span><span class="roc-val">0.976</span></div><div class="roc-track"><div class="roc-fill rf-2" style="width:97.6%"></div></div></div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">LightGBM</span><span class="roc-val">0.972</span></div><div class="roc-track"><div class="roc-fill rf-3" style="width:97.2%"></div></div></div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">Neural Network (MLP)</span><span class="roc-val">0.965</span></div><div class="roc-track"><div class="roc-fill rf-4" style="width:96.5%"></div></div></div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">Gradient Boosting</span><span class="roc-val">0.961</span></div><div class="roc-track"><div class="roc-fill rf-5" style="width:96.1%"></div></div></div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">SVM</span><span class="roc-val">0.938</span></div><div class="roc-track"><div class="roc-fill rf-6" style="width:93.8%"></div></div></div>
+        <div class="roc-item"><div class="roc-top"><span class="roc-name">Logistic Regression</span><span class="roc-val">0.887</span></div><div class="roc-track"><div class="roc-fill rf-7" style="width:88.7%"></div></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec">
+  <div class="container">
+    <div class="cta-title">Put the models to work</div>
+    <p class="cta-sub">Use our best-performing Random Forest model to scan any URL in real-time.</p>
+    <div>
+      <a href="/prediction" class="btn-p"><i class="fas fa-magnifying-glass"></i>Scan a URL Now</a>
+      <a href="/about" class="btn-s"><i class="fas fa-circle-info"></i>About the Project</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-sm-6"><div class="ft-brand">PhishGuard AI</div><div class="ft-copy">© 2025 URL Phishing Detection System. All rights reserved.</div></div>
+      <div class="col-sm-6"><div class="ft-links"><a href="/">Privacy</a><a href="/">Terms</a><a href="/index2">Home</a></div></div>
+    </div>
+  </div>
+</footer>
+
+<div class="modal fade" id="loginModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:410px;">
+    <div class="modal-content">
+      <div class="modal-header"><h5 class="modal-title"><i class="fas fa-shield-halved me-2" style="color:var(--blue)"></i>Login to PhishGuard AI</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+      <div class="modal-body">
+        <div class="mb-3"><label class="form-label">Email Address</label><input type="email" class="form-control" placeholder="you@example.com"></div>
+        <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" placeholder="Enter your password"></div>
+        <button class="btn-modal"><i class="fas fa-arrow-right-to-bracket me-2"></i>Sign In</button>
+        <div class="modal-note">No account? <a href="/register">Create one free</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

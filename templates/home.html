@@ -1,0 +1,434 @@
+{% extends "base.html" %}
+{% block title %}CyberGuard — Intelligent Threat Intelligence Platform{% endblock %}
+
+{% block head %}
+<style>
+  .hero {
+    min-height: calc(100vh - 64px);
+    display: flex;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    padding: 80px 0;
+  }
+
+  .hero-orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+  }
+  .hero-orb-1 {
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(0,229,255,0.08), transparent 70%);
+    top: -100px; left: -200px;
+  }
+  .hero-orb-2 {
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(124,58,237,0.08), transparent 70%);
+    bottom: -100px; right: -100px;
+  }
+
+  .hero-content {
+    position: relative;
+    max-width: 700px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .hero-eyebrow {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .live-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent4);
+    animation: pulse-glow 2s infinite;
+  }
+
+  .hero h1 {
+    font-size: clamp(2.8rem, 6vw, 5rem);
+    color: var(--text);
+    margin-bottom: 20px;
+  }
+
+  .hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, var(--accent) 0%, #a78bfa 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero-sub {
+    font-size: 1.1rem;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-bottom: 40px;
+    max-width: 560px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  /* Stats strip */
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    padding: 60px 0 40px;
+    animation: fadeUp 0.7s 0.3s ease both;
+    opacity: 0;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: default;
+  }
+
+  .stat-card:hover {
+    border-color: rgba(0,229,255,0.3);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.3);
+  }
+
+  .stat-value {
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  .stat-label {
+    font-size: 0.8rem;
+    color: var(--text2);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Feature cards */
+  .features {
+    padding: 40px 0 80px;
+  }
+
+  .features-header {
+    text-align: center;
+    margin-bottom: 48px;
+    animation: fadeUp 0.7s 0.4s ease both;
+    opacity: 0;
+  }
+
+  .features-header h2 {
+    font-size: 2.4rem;
+    margin-bottom: 12px;
+  }
+
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .feature-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    transition: all 0.3s;
+    animation: fadeUp 0.7s ease both;
+    opacity: 0;
+  }
+
+  .feature-card:nth-child(1) { animation-delay: 0.5s; }
+  .feature-card:nth-child(2) { animation-delay: 0.6s; }
+  .feature-card:nth-child(3) { animation-delay: 0.7s; }
+
+  .feature-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.4);
+  }
+
+  .feature-card:nth-child(1):hover { border-color: rgba(0,229,255,0.4); }
+  .feature-card:nth-child(2):hover { border-color: rgba(124,58,237,0.4); }
+  .feature-card:nth-child(3):hover { border-color: rgba(16,185,129,0.4); }
+
+  .feature-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+
+  .feature-card:nth-child(1) .feature-icon { background: rgba(0,229,255,0.1); }
+  .feature-card:nth-child(2) .feature-icon { background: rgba(124,58,237,0.1); }
+  .feature-card:nth-child(3) .feature-icon { background: rgba(16,185,129,0.1); }
+
+  .feature-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+
+  .feature-desc {
+    font-size: 0.875rem;
+    color: var(--text2);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .feature-meta {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .feature-cta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    margin-top: 16px;
+  }
+
+  .feature-card:nth-child(1) .feature-cta { color: var(--accent); }
+  .feature-card:nth-child(2) .feature-cta { color: #a78bfa; }
+  .feature-card:nth-child(3) .feature-cta { color: var(--accent4); }
+
+  /* Scan demo */
+  .scan-demo {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    margin-bottom: 80px;
+    animation: fadeUp 0.7s 0.8s ease both;
+    opacity: 0;
+  }
+
+  .scan-demo-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .scan-input-row {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+  }
+
+  .scan-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.875rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .scan-input:focus {
+    border-color: var(--accent);
+  }
+
+  .scan-input::placeholder { color: var(--text2); }
+
+  #quick-result {
+    margin-top: 20px;
+    display: none;
+  }
+
+  .result-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface2);
+    border-radius: 12px;
+    padding: 16px 20px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-orb hero-orb-1"></div>
+  <div class="hero-orb hero-orb-2"></div>
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-eyebrow">
+        <div class="live-dot"></div>
+        <span class="badge badge-cyan">AI-Powered Security Platform</span>
+      </div>
+      <h1>Detect Threats<br>with <em>Precision.</em></h1>
+      <p class="hero-sub">
+        CyberGuard combines state-of-the-art machine learning models to identify phishing URLs, 
+        classify network intrusions, and deliver intelligent security insights in real time.
+      </p>
+      <div class="hero-actions">
+        <a href="/predict/url" class="btn btn-primary">
+          <span>🔗</span> Scan a URL
+        </a>
+        <a href="/predict/cyber" class="btn btn-outline">
+          <span>⚡</span> Detect Attack
+        </a>
+        <a href="/predict/chatbot" class="btn btn-outline">
+          <span>🤖</span> Ask AI
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="container">
+  <!-- Stats -->
+  <div class="stats-strip">
+    <div class="stat-card">
+      <span class="stat-value">99.97%</span>
+      <span class="stat-label">URL Detection Accuracy</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">99.16%</span>
+      <span class="stat-label">Attack Detection Accuracy</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">5</span>
+      <span class="stat-label">Attack Types Classified</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-value">14</span>
+      <span class="stat-label">URL Features Extracted</span>
+    </div>
+  </div>
+
+  <!-- Quick scan -->
+  <div class="scan-demo">
+    <p class="section-label">Quick Scan</p>
+    <div class="scan-demo-title">Try URL Phishing Detection</div>
+    <p style="color:var(--text2);font-size:0.875rem;margin-top:6px">Paste any URL below for an instant phishing assessment.</p>
+    <div class="scan-input-row">
+      <input id="quick-url" class="scan-input" type="text" placeholder="https://example.com/login?token=abc123..." />
+      <button class="btn btn-primary" onclick="quickScan()">
+        Scan Now →
+      </button>
+    </div>
+    <div id="quick-result">
+      <div class="result-row">
+        <div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text2);margin-bottom:4px">RESULT</div>
+          <div id="result-label" style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800"></div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:'DM Mono',monospace;font-size:0.8rem;color:var(--text2);margin-bottom:4px">CONFIDENCE</div>
+          <div id="result-conf" style="font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--accent)"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;text-align:right">
+        <a href="/predict/url" style="color:var(--accent);font-size:0.8rem;font-family:'DM Mono',monospace;">View full analysis →</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Features -->
+  <div class="features">
+    <div class="features-header">
+      <p class="section-label">Three Modules</p>
+      <h2>Comprehensive Threat Coverage</h2>
+      <p style="color:var(--text2);font-size:0.95rem;margin-top:10px">Each module is independently trained and optimized for its threat category.</p>
+    </div>
+    <div class="features-grid">
+      <a href="/predict/url" class="feature-card">
+        <div class="feature-icon">🔗</div>
+        <div class="feature-title">URL Phishing Detection</div>
+        <p class="feature-desc">
+          14-feature extraction pipeline with entropy analysis, brand impersonation detection, 
+          and suspicious keyword matching powered by Random Forest.
+        </p>
+        <div class="feature-meta">
+          <span class="badge badge-cyan">Random Forest</span>
+          <span class="badge badge-cyan">500 Trees</span>
+        </div>
+        <div class="feature-cta">Go to module →</div>
+      </a>
+
+      <a href="/predict/cyber" class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-title">Cyber Attack Detection</div>
+        <p class="feature-desc">
+          Network intrusion classifier trained on UNSW-NB15 dataset. Detects Backdoor, DoS, 
+          Generic, Probe, and Worm attacks using LightGBM.
+        </p>
+        <div class="feature-meta">
+          <span class="badge badge-purple">LightGBM</span>
+          <span class="badge badge-purple">5 Classes</span>
+        </div>
+        <div class="feature-cta">Go to module →</div>
+      </a>
+
+      <a href="/predict/chatbot" class="feature-card">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-title">AI Security Assistant</div>
+        <p class="feature-desc">
+          Powered by Groq's Llama 3.3 70B. Ask anything about the platform, 
+          algorithms, datasets, or general cybersecurity concepts.
+        </p>
+        <div class="feature-meta">
+          <span class="badge badge-green">Llama 3.3 70B</span>
+          <span class="badge badge-green">Groq</span>
+        </div>
+        <div class="feature-cta">Start chatting →</div>
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function quickScan() {
+  const url = document.getElementById('quick-url').value.trim();
+  if (!url) { showToast('Please enter a URL', 'warning'); return; }
+  showToast('Scanning…', 'info');
+  try {
+    const res = await fetch('/api/predict/url', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    document.getElementById('quick-result').style.display = 'block';
+    const lbl = document.getElementById('result-label');
+    lbl.textContent = data.prediction;
+    lbl.style.color = data.prediction === 'PHISHING' ? 'var(--accent3)' : 'var(--accent4)';
+    document.getElementById('result-conf').textContent = data.confidence + '%';
+    showToast('Scan complete!', 'success');
+  } catch(e) {
+    showToast('Scan failed — check server', 'error');
+  }
+}
+document.getElementById('quick-url').addEventListener('keypress', e => {
+  if (e.key === 'Enter') quickScan();
+});
+</script>
+{% endblock %}

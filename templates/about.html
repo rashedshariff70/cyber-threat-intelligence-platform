@@ -1,0 +1,286 @@
+{% extends "base.html" %}
+{% block title %}About — CyberGuard{% endblock %}
+
+{% block head %}
+<style>
+  .about-hero {
+    padding: 80px 0 60px;
+    text-align: center;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .about-hero h1 { font-size: clamp(2.2rem, 5vw, 3.5rem); margin: 16px 0 16px; }
+  .about-hero p { color: var(--text2); font-size: 1rem; max-width: 560px; margin: 0 auto; line-height: 1.75; }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 40px 0;
+  }
+
+  .about-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.6s ease both;
+    opacity: 0;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .about-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    height: 3px;
+  }
+
+  .about-card:nth-child(1)::before { background: linear-gradient(90deg, #4f6ef7, #06b6d4); }
+  .about-card:nth-child(2)::before { background: linear-gradient(90deg, #7c3aed, #ec4899); }
+  .about-card:nth-child(3)::before { background: linear-gradient(90deg, #f59e0b, #ef4444); }
+  .about-card:nth-child(4)::before { background: linear-gradient(90deg, #10b981, #06b6d4); }
+
+  .about-card:nth-child(1) { animation-delay: 0.1s; }
+  .about-card:nth-child(2) { animation-delay: 0.2s; }
+  .about-card:nth-child(3) { animation-delay: 0.3s; }
+  .about-card:nth-child(4) { animation-delay: 0.4s; }
+
+  .about-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); border-color: var(--border2); }
+
+  .about-card-icon {
+    font-size: 2.2rem;
+    margin-bottom: 14px;
+    display: block;
+  }
+
+  .about-card h3 { font-size: 1.05rem; margin-bottom: 10px; font-weight: 800; }
+  .about-card p { color: var(--text2); font-size: 0.875rem; line-height: 1.7; }
+
+  /* Pipeline */
+  .pipeline {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 20px;
+    padding: 36px;
+    margin-bottom: 60px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.6s 0.5s ease both;
+    opacity: 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .pipeline::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--grad);
+  }
+
+  .pipeline-steps {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-top: 28px;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .pipeline-step {
+    flex: 1;
+    min-width: 120px;
+    text-align: center;
+  }
+
+  .pipeline-step-num {
+    width: 44px; height: 44px;
+    background: var(--grad);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900;
+    font-size: 0.95rem;
+    color: #fff;
+    margin: 0 auto 12px;
+    box-shadow: 0 4px 14px rgba(79,110,247,0.3);
+  }
+
+  .pipeline-step-title { font-size: 0.875rem; font-weight: 700; margin-bottom: 4px; color: var(--text); }
+  .pipeline-step-label { font-size: 0.75rem; color: var(--text3); font-family: 'JetBrains Mono', monospace; line-height: 1.4; }
+
+  .pipeline-arrow { color: var(--accent); font-size: 1.3rem; opacity: 0.4; padding-top: 12px; }
+
+  /* Tech stack */
+  .tech-stack {
+    padding: 20px 0 80px;
+    animation: fadeUp 0.6s 0.6s ease both;
+    opacity: 0;
+  }
+
+  .tech-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 32px;
+    color: var(--text);
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+  }
+
+  .tech-item {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: all 0.25s;
+  }
+
+  .tech-item:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .tech-item-icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+
+  .tech-item-name {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--accent);
+    margin-bottom: 3px;
+  }
+
+  .tech-item-desc {
+    font-size: 0.74rem;
+    color: var(--text3);
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="about-hero">
+    <span class="badge badge-blue">About the Platform</span>
+    <h1>Intelligent Threat<br>Intelligence Platform</h1>
+    <p>CyberGuard is an end-to-end AI security platform that unifies phishing detection, network intrusion classification, and AI-powered security Q&A into one cohesive system.</p>
+  </div>
+
+  <div class="about-grid">
+    <div class="about-card">
+      <span class="about-card-icon">🎯</span>
+      <h3>Mission</h3>
+      <p>To make advanced threat intelligence accessible through interpretable ML models and an intuitive interface — bridging the gap between raw data and actionable security decisions.</p>
+    </div>
+    <div class="about-card">
+      <span class="about-card-icon">🧠</span>
+      <h3>Methodology</h3>
+      <p>Each module was built by comparing multiple algorithms (RF, LightGBM, XGBoost, KNN, Decision Tree, Logistic Regression) and selecting the best-performing model per task using stratified evaluation.</p>
+    </div>
+    <div class="about-card">
+      <span class="about-card-icon">📊</span>
+      <h3>Datasets</h3>
+      <p>URL model trained on a custom phishing URL dataset with 48,820+ samples. Cyber attack model trained on UNSW-NB15 — a widely respected benchmark covering 5 attack categories.</p>
+    </div>
+    <div class="about-card">
+      <span class="about-card-icon">🤖</span>
+      <h3>LLM Integration</h3>
+      <p>The AI assistant is powered by Groq's ultra-fast inference engine running Llama 3.3 70B Versatile — enabling real-time, context-aware responses about platform internals and cybersecurity topics.</p>
+    </div>
+  </div>
+
+  <div class="pipeline">
+    <p class="section-label">How It Works</p>
+    <h2 style="font-size:1.5rem;margin-bottom:4px">Prediction Pipeline</h2>
+    <p style="color:var(--text2);font-size:0.875rem;margin-top:4px">From raw input to classified threat in milliseconds.</p>
+    <div class="pipeline-steps">
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">1</div>
+        <div class="pipeline-step-title">Input</div>
+        <div class="pipeline-step-label">URL / Network Features</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">2</div>
+        <div class="pipeline-step-title">Feature Extraction</div>
+        <div class="pipeline-step-label">14 URL features / Scaled vectors</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">3</div>
+        <div class="pipeline-step-title">ML Model</div>
+        <div class="pipeline-step-label">Random Forest / LightGBM</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">4</div>
+        <div class="pipeline-step-title">Prediction</div>
+        <div class="pipeline-step-label">Class + Confidence score</div>
+      </div>
+      <div class="pipeline-arrow">→</div>
+      <div class="pipeline-step">
+        <div class="pipeline-step-num">5</div>
+        <div class="pipeline-step-title">Visualization</div>
+        <div class="pipeline-step-label">Charts, features, explanation</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tech-stack">
+    <div class="tech-title">Technology Stack</div>
+    <div class="tech-grid">
+      <div class="tech-item">
+        <span class="tech-item-icon">🐍</span>
+        <div class="tech-item-name">Python / Flask</div>
+        <div class="tech-item-desc">Backend web framework</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">🌲</span>
+        <div class="tech-item-name">scikit-learn</div>
+        <div class="tech-item-desc">Random Forest model</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">⚡</span>
+        <div class="tech-item-name">LightGBM</div>
+        <div class="tech-item-desc">Gradient boosted trees</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">🤖</span>
+        <div class="tech-item-name">Groq API</div>
+        <div class="tech-item-desc">Llama 3.3 70B LLM</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">📊</span>
+        <div class="tech-item-name">Chart.js</div>
+        <div class="tech-item-desc">Interactive visualizations</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">🎨</span>
+        <div class="tech-item-name">Custom CSS</div>
+        <div class="tech-item-desc">Light cyber-themed UI</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">🐼</span>
+        <div class="tech-item-name">Pandas / NumPy</div>
+        <div class="tech-item-desc">Data preprocessing</div>
+      </div>
+      <div class="tech-item">
+        <span class="tech-item-icon">🔐</span>
+        <div class="tech-item-name">UNSW-NB15</div>
+        <div class="tech-item-desc">Network intrusion dataset</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

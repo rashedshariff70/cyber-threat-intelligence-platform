@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+{% block title %}URL Phishing Detection — CyberGuard{% endblock %}
+
+{% block head %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  .page-header {
+    padding: 72px 0 40px;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .page-header h1 { font-size: clamp(1.8rem, 4vw, 2.8rem); margin: 14px 0 8px; }
+  .page-header p { color: var(--text2); font-size: 0.9rem; max-width: 520px; line-height: 1.65; }
+
+  .predict-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    padding-bottom: 80px;
+  }
+
+  .input-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    animation: fadeUp 0.6s 0.2s ease both;
+    opacity: 0;
+    height: fit-content;
+    position: sticky;
+    top: 80px;
+  }
+
+  .result-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    animation: fadeUp 0.6s 0.3s ease both;
+    opacity: 0;
+  }
+
+  .input-label {
+    display: block;
+    font-size: 0.75rem;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text3);
+    margin-bottom: 8px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .url-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 13px 16px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    outline: none;
+    transition: all 0.2s;
+    resize: none;
+  }
+
+  .url-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(79,110,247,0.1);
+    background: #fff;
+  }
+
+  .url-input::placeholder { color: var(--text3); }
+
+  .sample-urls { margin-top: 20px; }
+
+  .sample-label {
+    font-size: 0.72rem;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-weight: 600;
+  }
+
+  .sample-chips { display: flex; flex-wrap: wrap; gap: 7px; }
+
+  .sample-chip {
+    background: var(--bg2);
+    border: 1.5px solid var(--border);
+    border-radius: 7px;
+    padding: 6px 11px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text2);
+    cursor: pointer;
+    transition: all 0.2s;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .sample-chip:hover { border-color: var(--accent); color: var(--accent); background: rgba(79,110,247,0.05); }
+  .sample-chip.phish { border-color: rgba(239,68,68,0.25); }
+  .sample-chip.phish:hover { border-color: var(--accent3); color: var(--accent3); background: rgba(239,68,68,0.05); }
+
+  .scan-btn {
+    width: 100%;
+    margin-top: 24px;
+    padding: 14px;
+    justify-content: center;
+    font-size: 0.95rem;
+  }
+
+  /* Result */
+  .result-verdict {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    text-align: center;
+    min-height: 160px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+  }
+
+  .verdict-icon { font-size: 3.2rem; margin-bottom: 12px; display: block; }
+
+  .verdict-label {
+    font-size: 2rem;
+    font-weight: 900;
+    margin-bottom: 8px;
+  }
+
+  .verdict-confidence {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    color: var(--text2);
+  }
+
+  .verdict-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text3);
+    margin-top: 12px;
+    word-break: break-all;
+    background: var(--bg2);
+    border-radius: 7px;
+    padding: 8px 12px;
+    max-width: 100%;
+  }
+
+  .features-card {
+    background: var(--surface);
+    border: 1.5px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    flex: 1;
+    box-shadow: var(--shadow);
+  }
+
+  .feature-list { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+
+  .feature-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 9px 14px;
+    background: var(--bg2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    transition: border-color 0.2s;
+  }
+
+  .feature-row:hover { border-color: var(--border2); }
+
+  .feature-name { font-size: 0.78rem; color: var(--text2); font-family: 'JetBrains Mono', monospace; font-weight: 500; }
+  .feature-val { font-family: 'JetBrains Mono', monospace; font-size: 0.875rem; font-weight: 700; color: var(--text); }
+
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); }
+  .empty-state-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.3; }
+  .empty-state p { font-size: 0.875rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="page-header">
+    <span class="badge badge-blue">Prediction Module 1</span>
+    <h1>URL Phishing Detection</h1>
+    <p>Powered by a Random Forest classifier with 500 trees and 14 engineered features achieving 99.97% accuracy.</p>
+  </div>
+
+  <div class="predict-layout">
+    <div class="input-card">
+      <p class="section-label">Input URL</p>
+      <h3 style="font-size:1rem;margin-bottom:20px;color:var(--text);font-weight:700">Enter a URL to analyze</h3>
+
+      <label class="input-label">URL to scan</label>
+      <textarea id="url-input" class="url-input" rows="3" placeholder="https://suspicious-bank-verify.tk/login?user=admin&token=xyzabc123..."></textarea>
+
+      <div class="sample-urls">
+        <div class="sample-label">Sample URLs (click to fill)</div>
+        <div class="sample-chips">
+          <div class="sample-chip" onclick="fillURL(this.textContent)">https://google.com</div>
+          <div class="sample-chip" onclick="fillURL(this.textContent)">https://github.com/login</div>
+          <div class="sample-chip phish" onclick="fillURL(this.textContent)">http://payp4l-verify.tk/signin?user=you</div>
+          <div class="sample-chip phish" onclick="fillURL(this.textContent)">http://192.168.1.1/bank/login?auth=reset</div>
+          <div class="sample-chip phish" onclick="fillURL(this.textContent)">http://secure-amazon-gift.free.fr/reward</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary scan-btn" onclick="scanURL()">
+        <span id="scan-btn-content">🔍 Analyze URL</span>
+      </button>
+    </div>
+
+    <div class="result-column">
+      <div class="result-verdict" id="verdict-card">
+        <div class="empty-state">
+          <div class="empty-state-icon">🔗</div>
+          <p>Enter a URL and click Analyze to see the phishing prediction</p>
+        </div>
+      </div>
+
+      <div class="features-card">
+        <p class="section-label">Feature Analysis</p>
+        <div id="features-list">
+          <div class="empty-state"><p>Feature breakdown will appear after analysis</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function fillURL(url) {
+  document.getElementById('url-input').value = url;
+}
+
+async function scanURL() {
+  const url = document.getElementById('url-input').value.trim();
+  if (!url) { showToast('Please enter a URL', 'warning'); return; }
+
+  const btnContent = document.getElementById('scan-btn-content');
+  btnContent.innerHTML = '<div class="loading-spin"></div> Analyzing…';
+
+  const verdict = document.getElementById('verdict-card');
+  verdict.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:12px"><div class="loading-spin"></div><span style="font-size:0.875rem;color:var(--text2)">Running Random Forest…</span></div>`;
+
+  try {
+    const res = await fetch('/api/predict/url', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+
+    const isPhish = data.prediction === 'PHISHING';
+    const color = isPhish ? 'var(--accent3)' : 'var(--accent4)';
+    const icon = isPhish ? '⚠️' : '✅';
+    const bgColor = isPhish ? 'rgba(239,68,68,0.06)' : 'rgba(16,185,129,0.06)';
+    const borderColor = isPhish ? 'rgba(239,68,68,0.3)' : 'rgba(16,185,129,0.3)';
+
+    verdict.style.borderColor = borderColor;
+    verdict.style.background = bgColor;
+    verdict.innerHTML = `
+      <span class="verdict-icon">${icon}</span>
+      <div class="verdict-label" style="color:${color}">${data.prediction}</div>
+      <div class="verdict-confidence">Confidence: <strong style="color:var(--text)">${data.confidence}%</strong></div>
+      <div class="verdict-url">${url}</div>
+    `;
+
+    const featuresList = document.getElementById('features-list');
+    featuresList.innerHTML = '<div class="feature-list">' +
+      Object.entries(data.features).map(([k, v]) => {
+        let displayVal = typeof v === 'number' ? (Number.isInteger(v) ? v : v.toFixed(3)) : v;
+        let flagColor = '';
+        if (k === 'Entropy' && v > 4.0) flagColor = 'color:var(--accent3)';
+        if (k === 'Suspicious Keywords' && v > 0) flagColor = 'color:var(--accent3)';
+        if (k === 'Brand Impersonation' && v > 0) flagColor = 'color:var(--accent3)';
+        if (k === 'HTTPS' && v === 1) flagColor = 'color:var(--accent4)';
+        if (k === 'IP URL' && v === 1) flagColor = 'color:var(--accent3)';
+        return `<div class="feature-row">
+          <span class="feature-name">${k}</span>
+          <span class="feature-val" style="${flagColor}">${displayVal}</span>
+        </div>`;
+      }).join('') +
+    '</div>';
+
+    showToast('Analysis complete!', 'success');
+  } catch(e) {
+    showToast('Request failed — is the server running?', 'error');
+    verdict.innerHTML = `<div style="color:var(--accent3);padding:20px">⚠️ Server error — please check Flask is running</div>`;
+  } finally {
+    btnContent.innerHTML = '🔍 Analyze URL';
+  }
+}
+</script>
+{% endblock %}
